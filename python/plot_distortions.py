@@ -46,7 +46,7 @@ plt.rc('axes', labelsize=7)
 plt.rc('xtick', labelsize=7)
 plt.rc('ytick', labelsize=7)
 plt.rc('legend', fontsize=7)
-plt.rc('figure', titlesize=12, dpi=150)
+plt.rc('figure', titlesize=12, dpi=100)
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
@@ -123,7 +123,7 @@ def main():
     logging.debug(f"Reading fids from {in_fname}")
     fids = pd.read_hdf(in_fname, 'fids')
 
-    stitle = 'paralactic angle' if xparam == 'q' else xparam
+    stitle = 'parallactic angle' if xparam == 'q' else xparam
     fig, axes = plot_fids(exp_params, fids, xparam, params, stitle)
     fig.savefig(out_fname)
 
