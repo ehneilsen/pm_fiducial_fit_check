@@ -1,4 +1,7 @@
 #!/bin/sh
+
+set -x
+
 DIRECTORY=/global/project/projectdirs/desi/users/skent/products
 source ${DIRECTORY}/eups/bin/setups.sh
 export EUPS_PATH=${DIRECTORY}
