@@ -2,9 +2,9 @@
 # Utility
 ###############################################################################
 
-.PHONY: clean
-clean:
-	rm data/*.h5 figures/*.png figures/*.pdf
+# .PHONY: clean
+# clean:
+# 	rm -f data/*.h5 figures/*.png figures/*.pdf
 
 ###############################################################################
 # Data collection
@@ -60,12 +60,16 @@ data/fids.h5: python/munge.py data/everywhere_inventory.txt
 
 plot: figures/petal_vs_q_page1.png \
 	figures/petal_vs_q_page2.png \
-	figures/petal_vs_zd_page1.png \
-	figures/petal_vs_zd_page2.png \
 	figures/distortion_vs_q_page1.png \
 	figures/distortion_vs_q_page2.png \
+	figures/petal_vs_zd_page1.png \
+	figures/petal_vs_zd_page2.png \
 	figures/distortion_vs_zd_page1.png \
-	figures/distortion_vs_zd_page2.png
+	figures/distortion_vs_zd_page2.png \
+	figures/petal_vs_mjd_page1.png \
+	figures/petal_vs_mjd_page2.png \
+	figures/distortion_vs_mjd_page1.png \
+	figures/distortion_vs_mjd_page2.png
 
 figures/petal_vs_%_page1.png: python/plot_petals.py \
 		data/fids.h5
