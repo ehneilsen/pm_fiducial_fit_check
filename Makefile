@@ -17,14 +17,14 @@
 .PHONY: collect
 
 collect: data/everywhere_inventory.txt \
-		fiducial_dits
+		fiducial_fits
 	pass
 
 data/everywhere_inventory.txt: sh/everywhere_inventory.sh
 	sh/everywhere_inventory.sh
 
-fiducial_fits: sh/fit_fiducials.sh
-	sh/fit_fiducials.sh
+fiducial_fits: sh/fit_fiducials.sh data/everywhere_inventory.txt
+	sh/fit_fiducials.sh < data/everywhere_inventory.txt
 
 ###############################################################################
 # Data munging
