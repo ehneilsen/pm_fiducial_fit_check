@@ -98,10 +98,12 @@ def main():
     out_fname = args.out_fname
 
     logging.debug(f"Reading exp_params from {in_fname}")
-    exp_params = pd.read_hdf(in_fname, 'exp_params')
+    exp_params = pd.read_hdf(in_fname, 'exp_params').query('successful')
     
     logging.debug(f"Reading fids from {in_fname}")
     fids = pd.read_hdf(in_fname, 'fids')
+    fids = fids.loc[fids[('successful', None, None)]]
+
     
     stitle = 'parallactic angle' if xparam == 'q' else xparam
     fig, axes = plot_petals(exp_params, fids, xparam, petals, stitle)

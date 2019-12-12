@@ -37,7 +37,9 @@ fiducial_fits: sh/fit_fiducials.sh data/everywhere_inventory.txt
 munge: data/fids.h5
 
 data/fids.h5: python/munge.py data/everywhere_inventory.txt
-	python $^ data $@
+	python $^ data $@ \
+		--exp_params_fname data/exp_params.txt \
+		--fids_fname data/fids.txt
 
 ###############################################################################
 # Processing

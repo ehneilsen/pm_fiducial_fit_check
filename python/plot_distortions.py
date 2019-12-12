@@ -16,11 +16,13 @@ import matplotlib.pyplot as plt
 
 
 DISTORTION_NAMES = OrderedDict((
+    (('xzth', 0), "xzth,0"),
     (('xzth', 1), "scale factor (half mm at edge)"),
     (('xzth', 2), "E modes"),
     (('xzth', 3), "3rd order distortion"),
     (('xzth', 4), "higher order E modes"),
     (('xzth', 5), "5th order distortion"),
+    (('yzth', 0), "yzth,0"),
     (('yzth', 1), "rotation (half mm at edge)"),
     (('yzth', 2), "B modes"),
     (('yzth', 3), "spiral rotation")
@@ -32,8 +34,8 @@ DISTORTION_TERM_NAMES = OrderedDict((
     ('c', 'cos')
 ))
 
-PAGE_PARAMS = {1: tuple(DISTORTION_NAMES.keys())[:4],
-               2: tuple(DISTORTION_NAMES.keys())[4:]}
+PAGE_PARAMS = {1: tuple(DISTORTION_NAMES.keys())[:5],
+               2: tuple(DISTORTION_NAMES.keys())[5:]}
 
 HUMAN_LABELS = False
 
@@ -118,10 +120,11 @@ def main():
     out_fname = args.out_fname
 
     logging.debug(f"Reading exp_params from {in_fname}")
-    exp_params = pd.read_hdf(in_fname, 'exp_params')
+    exp_params = pd.read_hdf(in_fname, 'exp_params').query('successful')
 
     logging.debug(f"Reading fids from {in_fname}")
     fids = pd.read_hdf(in_fname, 'fids')
+    fids = fids.loc[fids[('successful', None, None)]]
 
     stitle = 'parallactic angle' if xparam == 'q' else xparam
     fig, axes = plot_fids(exp_params, fids, xparam, params, stitle)

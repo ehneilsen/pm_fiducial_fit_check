@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 import logging
 from collections import OrderedDict
 
+import numpy as np
 import pandas as pd
 from astropy.io import fits
 
@@ -32,6 +33,9 @@ HEADER_PARAMS = {
     'pressure': 'PRESSURE',
 }
 
+MIN_NUM_FIDUCIALS = 110
+MAX_POS_RMS = 0.05
+
 # exception classes
 
 # interface functions
@@ -43,9 +47,22 @@ def munge(qcinv_fname, fits_dir, zth_dir):
     exp_params = qcinv.merge(fits_params, right_index=True, left_index=True)
 
     fids = exp_params.merge(zths, left_index=True, right_index=True)
+
+    def read_num_fiducials(expid):
+        fiducials = read_fvcMerge(expid, zth_dir)
+        num_fiducials = len(fiducials)
+        return num_fiducials
+
+    fids['num_fiducials'] = fids['expid'].map(read_num_fiducials)
+    fids['successful'] = fids.eval(f'(num_fiducials>={MIN_NUM_FIDUCIALS}) & (xrms <= {MAX_POS_RMS}) & (yrms <= {MAX_POS_RMS})')
+    good_exp_params = exp_params.loc[fids['expid']]
+    good_exp_params['successful'] = fids['successful'] 
+    
     fids.columns = pd.MultiIndex.from_tuples(
         [x if len(x) == 3 and not isinstance(x, str) else (x, ) for x in fids.columns])
-    return exp_params, fids
+
+    
+    return good_exp_params, fids
 
 # classes
 
@@ -153,12 +170,25 @@ def read_zths(zth_dir, qcinv):
     return zths
 
 
+def read_fvcMerge(expid, data_dir):
+    fname = f'{data_dir}/{expid}/fvcMerge-{expid}.dat'
+    try:
+        fiducials = pd.read_csv(fname, sep="\s+")
+    except:
+        logging.exception(f'Could not read {fname}')
+        return pd.DataFrame()
+
+    return fiducials
+
+
 def main():
     parser = ArgumentParser(description="Read the qcinv data file")
     parser.add_argument("qcinv_fname", type=str,
                         help="file with results of qcinv")
     parser.add_argument("data_dir", type=str, help="data directory")
     parser.add_argument("out_fname", type=str, help="file to write")
+    parser.add_argument("--exp_params_fname", type=str, default=None, help="file to write")
+    parser.add_argument("--fids_fname", type=str, default=None, help="file to write")
     args = parser.parse_args()
 
     qcinv_fname = args.qcinv_fname
@@ -168,6 +198,27 @@ def main():
     exp_params, fids = munge(qcinv_fname, data_dir, data_dir)
     exp_params.to_hdf(out_fname, 'exp_params')
     fids.to_hdf(out_fname, 'fids')
+
+    if args.exp_params_fname is not None:
+        exp_params.to_csv(args.exp_params_fname, sep="\t", header=True, index=False)
+
+    if args.fids_fname is not None:
+        flat_fids = fids.copy()
+        def colstr(col):
+            colname = col[0]
+            for c in col[1:]:
+                if c is None:
+                    continue
+                elif isinstance(c, str):
+                    colname = colname + "," + c
+                elif np.isfinite(c) and c == int(c):
+                    colname = colname + "," + str(int(c))
+                elif str(c) != 'nan':
+                    colname = colname + "," + str(c)
+            return colname
+        
+        flat_fids.columns = [colstr(col) for col in flat_fids.columns.values]
+        flat_fids.to_csv(args.fids_fname, sep="\t", header=True, index=False)
 
     return 0
 
