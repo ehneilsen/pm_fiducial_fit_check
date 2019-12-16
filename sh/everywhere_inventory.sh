@@ -19,7 +19,13 @@ for DAY in $(seq -f "%02g" 10 31);  do
 done
 
 MONTH=11
-for DAY in $(seq -f "%02g" 1 18);  do
+for DAY in $(seq -f "%02g" 1 30);  do
+    NITE=2019${MONTH}${DAY}
+    pgtcl -c "inv ${NITE} FVC" | grep "FVC everywhere script" | sed 's/^/'${NITE}\ '/g' >> data/everywhere_inventory.txt
+done
+
+MONTH=12
+for DAY in $(seq -f "%02g" 1 32);  do
     NITE=2019${MONTH}${DAY}
     pgtcl -c "inv ${NITE} FVC" | grep "FVC everywhere script" | sed 's/^/'${NITE}\ '/g' >> data/everywhere_inventory.txt
 done

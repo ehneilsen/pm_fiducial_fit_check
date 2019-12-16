@@ -21,13 +21,16 @@ while read LINE ; do
     EXPID=$(echo $LINE | cut -f2 -d' ')
     PADEXPID=$(printf "%08d" ${EXPID})
     NITE=$(echo $LINE | cut -f1 -d' ')
-    mkdir data/${EXPID}
-    cd data/${EXPID}
-    ln -s /project/projectdirs/desi/users/skent/plate/desi/desitest/init.tcl .
-    ln -s /project/projectdirs/desi/users/skent/plate/desi/etc/desi4/desi4.par .
-    ln -s /project/projectdirs/desi/users/skent/plate/desi/etc/desi4/fiberpos-desi4.dat .
-    ln -s /project/projectdirs/desi/spectro/data/${NITE}/${PADEXPID}/fvc-${PADEXPID}.fits.fz .
-    imgMain -- <<EOF
+    if test -d "data/${EXPID}" ; then
+	echo "data/${EXPID} already exists, not reprocessing"
+    else
+	mkdir data/${EXPID}
+	cd data/${EXPID}
+	ln -s /project/projectdirs/desi/users/skent/plate/desi/desitest/init.tcl .
+	ln -s /project/projectdirs/desi/users/skent/plate/desi/etc/desi4/desi4.par .
+	ln -s /project/projectdirs/desi/users/skent/plate/desi/etc/desi4/fiberpos-desi4.dat .
+	ln -s /project/projectdirs/desi/spectro/data/${NITE}/${PADEXPID}/fvc-${PADEXPID}.fits.fz .
+	imgMain -- <<EOF
     	    source init.tcl
 	    desiParamRead desi4
             fvcParamRead desi4
@@ -37,6 +40,7 @@ while read LINE ; do
             psolveSolve
             fiducialFit ${EXPID}
 EOF
+    fi
     cd $ORIG_DIR
 done
 kill ${XVFBPID}
