@@ -73,6 +73,13 @@ plot: figures/petal_vs_q_page1.png \
 	figures/distortion_vs_mjd_page1.png \
 	figures/distortion_vs_mjd_page2.png
 
+focus_plot: figures/distortion_vs_focus_xtrans_page1.png \
+	figures/distortion_vs_focus_ytrans_page1.png \
+	figures/distortion_vs_focus_ytrans_page1.png \
+	figures/distortion_vs_focus_xtilt_page1.png \
+	figures/distortion_vs_focus_ytilt_page1.png \
+	figures/distortion_vs_focus_ztilt_page1.png
+
 figures/petal_vs_%_page1.png: python/plot_petals.py \
 		data/fids.h5
 	python $^ $* 1 $@

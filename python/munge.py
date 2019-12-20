@@ -33,7 +33,10 @@ HEADER_PARAMS = {
     'pressure': 'PRESSURE',
 }
 
-MIN_NUM_FIDUCIALS = 110
+FOCUS_ELEMENTS = ('xtrans', 'ytrans', 'ztrans', 'xtilt', 'ytilt', 'ztilt')
+
+#MIN_NUM_FIDUCIALS = 110
+MIN_NUM_FIDUCIALS = 100
 MAX_POS_RMS = 0.05
 
 # exception classes
@@ -96,6 +99,13 @@ def read_one_fits_header_params(expid, fits_dir):
     hdus = fits.open(fname)
     for key in HEADER_PARAMS:
         values[key] = hdus[0].header[HEADER_PARAMS[key]]
+
+    # Parse FOCUS keyword
+    focus_values = tuple(
+        float(v) for v in hdus[0].header['FOCUS'].split(','))
+    for elem, value in zip(FOCUS_ELEMENTS, focus_values):
+        values[f'focus_{elem}'] = value
+    
     result = pd.Series(values, name=expid)
     return result
 
@@ -172,6 +182,13 @@ def read_zths(zth_dir, qcinv):
 
 def read_fvcMerge(expid, data_dir):
     fname = f'{data_dir}/{expid}/fvcMerge-{expid}.dat'
+    try:
+        fiducials = pd.read_csv(fname, sep="\s+")
+        return fiducials
+    except:
+        pass
+
+    fname = f'{data_dir}/{expid}/fvcMerge-{expid}.0.dat'
     try:
         fiducials = pd.read_csv(fname, sep="\s+")
     except:
