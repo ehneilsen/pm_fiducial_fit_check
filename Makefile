@@ -2,26 +2,36 @@
 # Utility
 ###############################################################################
 
-# .PHONY: clean
-# clean:
-# 	rm -f data/*.h5 figures/*.png figures/*.pdf
+.PHONY: clean
+
+clean:
+	rm -fr data/*.h5 figures/*.png figures/*.pdf data/????? data/*.txt
+
+.PHONY: retrieve
+
+retrieve:
+	rsync -Lav -e ssh cori.nersc.gov:/global/project/projectdirs/desi/users/neilsen/pm_fiducial_fit_check/data/ data
 
 ###############################################################################
 # Data collection
 ###############################################################################
 
-# This section contains all code the retrieves 
-# data from outside sources; later sections depend
-# only on files generated in this section.
-
 .PHONY: collect
 
-collect: data/everywhere_inventory.txt \
-		fiducial_fits
+collect: data/everywhere_inventory.txt
 	pass
 
 data/everywhere_inventory.txt: sh/everywhere_inventory.sh
 	sh/everywhere_inventory.sh
+
+###############################################################################
+# Data processing
+###############################################################################
+
+.PHONY: process
+
+process: fiducial_fits
+	pass
 
 fiducial_fits: sh/fit_fiducials.sh data/everywhere_inventory.txt
 	sh/fit_fiducials.sh < data/everywhere_inventory.txt
@@ -41,20 +51,6 @@ data/fids.h5: python/munge.py data/everywhere_inventory.txt
 		--exp_params_fname data/exp_params.txt \
 		--fids_fname data/fids.txt
 
-###############################################################################
-# Processing
-###############################################################################
-
-# process: data/processed/sample_summary.txt \
-# 	data/processed/sample_mean.txt
-
-# data/processed/sample_summary.txt: python/sample_summarize.py \
-# 		data/collected/sample_collected.txt
-# 	$^ $@
-
-# data/processed/sample_mean.txt: R/sample_mean.R \
-# 		data/munged/sample.RData
-# 	$^ $@
 
 ###############################################################################
 # Figure generation
@@ -95,32 +91,4 @@ figures/distortion_vs_%_page1.png: python/plot_distortions.py \
 figures/distortion_vs_%_page2.png: python/plot_distortions.py \
 		data/fids.h5
 	python $^ $* 2 $@
-
-###############################################################################
-# Report generation
-###############################################################################
-
-# report: report/sample_index.html
-
-# report/figures/%: figures/%
-# 	mkdir -p report/figures
-# 	cp $< $@
-
-# report/data/collected/%: data/collected/%
-# 	mkdir -p report/data/collected
-# 	cp $< $@
-
-# report/data/munged/%: data/munged/%
-# 	mkdir -p report/data/munged
-# 	cp $< $@
-
-# report/data/processed/%: data/processed/%
-# 	mkdir -p report/data/processed
-# 	cp $< $@
-
-# report/sample_index.html: report/sample_index.org \
-# 		report/data/processed/sample_summary.txt \
-# 		report/data/munged/sample.RData \
-# 		report/figures/sample_plot.png
-# 	emacs $< --batch -f org-html-export-to-html --kill
 
